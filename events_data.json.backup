@@ -1,0 +1,41 @@
+[
+  {
+    "id": "event_931cd6b8",
+    "name": "kannada 1",
+    "location": "bengaluru",
+    "date": "2025-11-04",
+    "category": "Conference",
+    "image": "/static/images/default_event.jpg",
+    "photos_count": 3,
+    "qr_code": "/api/qr_code/event_931cd6b8",
+    "created_by": 1,
+    "created_at": "2025-08-27T16:48:59.308790",
+    "sample_photos": [],
+    "cover_thumbnail": "/uploads/thumbnails/event_931cd6b8_thumb_1ce89ef6.jpeg",
+    "organization_name": "rnsit"
+  },
+  {
+    "id": "event_9556ed12",
+    "name": "RSC",
+    "location": "RNSIT campus, bengaluru",
+    "date": "2025-09-12",
+    "category": "Sports",
+    "image": "/static/images/default_event.jpg",
+    "photos_count": 2,
+    "qr_code": "/api/qr_code/event_9556ed12",
+    "created_by": 1,
+    "created_at": "2025-10-21T18:19:29.502507"
+  },
+  {
+    "id": "event_31f4f347",
+    "name": "parichay 2025",
+    "location": "RNSIT campus, bengaluru",
+    "date": "2025-09-12",
+    "category": "Concert",
+    "image": "/static/images/default_event.jpg",
+    "photos_count": 0,
+    "qr_code": "/api/qr_code/event_31f4f347",
+    "created_by": null,
+    "created_at": "2025-11-11T20:32:15.034091"
+  }
+]

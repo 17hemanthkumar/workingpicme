@@ -34,7 +34,7 @@
     <main class="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-12">
             <h1 class="text-4xl font-bold text-gray-900">Your Personal Photo Gallery</h1>
-            <p class="text-lg text-gray-600 mt-2">Here are all the photos we found of you from the event.</p>
+            <p class="text-lg text-gray-600 mt-2">Here are all the photos we found of you from the event. Click any photo to view or download.</p>
         </div>
 
         <!-- Individual Photos Section -->
@@ -52,7 +52,53 @@
                 <!-- Group photos will be loaded here -->
             </div>
         </div>
+
+        <!-- Download Selected Button -->
+        <div id="download-selected-container" class="mt-8 flex items-center justify-between bg-gray-50 p-4 rounded-lg hidden sticky bottom-4">
+            <span id="selected-count" class="text-gray-700 font-medium">0 photos selected</span>
+            <button id="download-selected-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                <span>Download Selected</span>
+            </button>
+        </div>
     </main>
+
+    <!-- Photo Lightbox Modal -->
+    <div id="photo-lightbox" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
+        <button id="close-lightbox" class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        
+        <button id="prev-photo" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        
+        <button id="next-photo" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </button>
+        
+        <div class="flex items-center justify-center w-full h-full p-4">
+            <img id="lightbox-image" src="" class="max-w-full max-h-full object-contain" alt="Photo preview">
+        </div>
+        
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
+            <button id="download-photo-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-all flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                <span>Download Photo</span>
+            </button>
+            <div id="download-status" class="text-white text-sm hidden"></div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -68,29 +114,271 @@
             }
 
             const data = JSON.parse(galleryDataString);
-            const { event_id, person_id, individual_photos, group_photos } = data;
+            const { event_id, person_id, individual_photos, group_photos, event_name } = data;
 
+            // Lightbox functionality
+            const lightbox = document.getElementById('photo-lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const closeLightboxBtn = document.getElementById('close-lightbox');
+            const prevPhotoBtn = document.getElementById('prev-photo');
+            const nextPhotoBtn = document.getElementById('next-photo');
+            const downloadPhotoBtn = document.getElementById('download-photo-btn');
+            const downloadStatus = document.getElementById('download-status');
+            
+            let currentPhotos = [];
+            let currentPhotoIndex = 0;
+
+            function openLightbox(photos, index) {
+                currentPhotos = photos;
+                currentPhotoIndex = index;
+                updateLightboxImage();
+                lightbox.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightbox.classList.add('hidden');
+                document.body.style.overflow = '';
+                downloadStatus.classList.add('hidden');
+            }
+
+            function updateLightboxImage() {
+                lightboxImage.src = currentPhotos[currentPhotoIndex];
+                prevPhotoBtn.style.display = currentPhotoIndex > 0 ? 'block' : 'none';
+                nextPhotoBtn.style.display = currentPhotoIndex < currentPhotos.length - 1 ? 'block' : 'none';
+            }
+
+            function showNextPhoto() {
+                if (currentPhotoIndex < currentPhotos.length - 1) {
+                    currentPhotoIndex++;
+                    updateLightboxImage();
+                }
+            }
+
+            function showPrevPhoto() {
+                if (currentPhotoIndex > 0) {
+                    currentPhotoIndex--;
+                    updateLightboxImage();
+                }
+            }
+
+            closeLightboxBtn.addEventListener('click', closeLightbox);
+            nextPhotoBtn.addEventListener('click', showNextPhoto);
+            prevPhotoBtn.addEventListener('click', showPrevPhoto);
+            
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) closeLightbox();
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (!lightbox.classList.contains('hidden')) {
+                    if (e.key === 'Escape') closeLightbox();
+                    else if (e.key === 'ArrowRight') showNextPhoto();
+                    else if (e.key === 'ArrowLeft') showPrevPhoto();
+                }
+            });
+
+            // Download functionality
+            downloadPhotoBtn.addEventListener('click', async () => {
+                const photoUrl = currentPhotos[currentPhotoIndex];
+                
+                downloadPhotoBtn.disabled = true;
+                downloadPhotoBtn.innerHTML = `
+                    <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Downloading...</span>
+                `;
+                
+                try {
+                    const link = document.createElement('a');
+                    link.href = photoUrl;
+                    link.download = photoUrl.split('/').pop();
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    await fetch('/api/download-photo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            photo_url: photoUrl,
+                            event_id: event_id,
+                            event_name: event_name || 'Unknown Event'
+                        })
+                    });
+                    
+                    downloadStatus.textContent = '✓ Downloaded successfully!';
+                    downloadStatus.classList.remove('hidden');
+                    setTimeout(() => downloadStatus.classList.add('hidden'), 3000);
+                    
+                } catch (error) {
+                    console.error('Download error:', error);
+                    downloadStatus.textContent = '✗ Download failed';
+                    downloadStatus.classList.remove('hidden');
+                    setTimeout(() => downloadStatus.classList.add('hidden'), 3000);
+                } finally {
+                    downloadPhotoBtn.disabled = false;
+                    downloadPhotoBtn.innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <span>Download Photo</span>
+                    `;
+                }
+            });
+
+            // Helper function to download directly
+            async function downloadPhotoDirectly(photoUrl) {
+                try {
+                    const link = document.createElement('a');
+                    link.href = photoUrl;
+                    link.download = photoUrl.split('/').pop();
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    await fetch('/api/download-photo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            photo_url: photoUrl,
+                            event_id: event_id,
+                            event_name: event_name || 'Unknown Event'
+                        })
+                    });
+                } catch (error) {
+                    console.error('Download error:', error);
+                }
+            }
+
+            // Load individual photos with checkboxes
             if (individual_photos && individual_photos.length > 0) {
+                const individualPhotoUrls = individual_photos.map(filename => 
+                    `/photos/${event_id}/${person_id}/individual/${filename}`
+                );
+                
                 let html = '';
-                individual_photos.forEach(filename => {
+                individual_photos.forEach((filename, idx) => {
                     const photoUrl = `/photos/${event_id}/${person_id}/individual/${filename}`;
-                    html += `<div class="aspect-w-1 aspect-h-1"><img src="${photoUrl}" class="w-full h-full object-cover rounded-lg shadow-md" loading="lazy"></div>`;
+                    html += `
+                        <div class="relative">
+                            <input type="checkbox" 
+                                   class="photo-checkbox absolute top-2 left-2 w-5 h-5 z-10 cursor-pointer rounded"
+                                   data-photo-url="${photoUrl}"
+                                   data-photo-index="${idx}">
+                            <img src="${photoUrl}" 
+                                 class="w-full h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer photo-thumbnail" 
+                                 data-index="${idx}"
+                                 data-photo-url="${photoUrl}"
+                                 loading="lazy">
+                        </div>
+                    `;
                 });
                 individualGrid.innerHTML = html;
+                
+                // Add click handlers for individual photos
+                individualGrid.querySelectorAll('.photo-thumbnail').forEach(img => {
+                    img.addEventListener('click', (e) => {
+                        if (e.target.type === 'checkbox') return;
+                        const index = parseInt(img.dataset.index);
+                        console.log('Individual photo clicked, index:', index);
+                        openLightbox(individualPhotoUrls, index);
+                    });
+                });
             } else {
                 individualGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No individual photos of you were found in this event.</p>';
             }
 
+            // Load group photos with checkboxes
             if (group_photos && group_photos.length > 0) {
+                const groupPhotoUrls = group_photos.map(filename => 
+                    `/photos/${event_id}/${person_id}/group/${filename}`
+                );
+                
                 let html = '';
-                group_photos.forEach(filename => {
+                group_photos.forEach((filename, idx) => {
                     const photoUrl = `/photos/${event_id}/${person_id}/group/${filename}`;
-                    html += `<div class="aspect-w-1 aspect-h-1"><img src="${photoUrl}" class="w-full h-full object-cover rounded-lg shadow-md" loading="lazy"></div>`;
+                    html += `
+                        <div class="relative">
+                            <input type="checkbox" 
+                                   class="photo-checkbox absolute top-2 left-2 w-5 h-5 z-10 cursor-pointer rounded"
+                                   data-photo-url="${photoUrl}"
+                                   data-photo-index="${idx}">
+                            <img src="${photoUrl}" 
+                                 class="w-full h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer photo-thumbnail" 
+                                 data-index="${idx}"
+                                 data-photo-url="${photoUrl}"
+                                 loading="lazy">
+                        </div>
+                    `;
                 });
                 groupGrid.innerHTML = html;
+                
+                // Add click handlers for group photos
+                groupGrid.querySelectorAll('.photo-thumbnail').forEach(img => {
+                    img.addEventListener('click', (e) => {
+                        if (e.target.type === 'checkbox') return;
+                        const index = parseInt(img.dataset.index);
+                        console.log('Group photo clicked, index:', index);
+                        openLightbox(groupPhotoUrls, index);
+                    });
+                });
             } else {
                 groupGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No group photos of you were found in this event.</p>';
             }
+
+            // Selection tracking
+            let selectedPhotos = new Set();
+            const downloadSelectedContainer = document.getElementById('download-selected-container');
+            const selectedCountEl = document.getElementById('selected-count');
+            const downloadSelectedBtn = document.getElementById('download-selected-btn');
+
+            // Update selection UI
+            function updateSelectionUI() {
+                const count = selectedPhotos.size;
+                selectedCountEl.textContent = `${count} photo${count !== 1 ? 's' : ''} selected`;
+                downloadSelectedBtn.disabled = count === 0;
+                downloadSelectedContainer.classList.toggle('hidden', count === 0);
+            }
+
+            // Setup checkbox handlers
+            document.querySelectorAll('.photo-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    e.stopPropagation();
+                    const photoUrl = checkbox.dataset.photoUrl;
+                    if (checkbox.checked) {
+                        selectedPhotos.add(photoUrl);
+                    } else {
+                        selectedPhotos.delete(photoUrl);
+                    }
+                    updateSelectionUI();
+                });
+            });
+
+            // Download selected photos
+            downloadSelectedBtn.addEventListener('click', async () => {
+                if (selectedPhotos.size === 0) return;
+                
+                downloadSelectedBtn.disabled = true;
+                downloadSelectedBtn.innerHTML = '<span>Downloading...</span>';
+                
+                for (const photoUrl of selectedPhotos) {
+                    await downloadPhotoDirectly(photoUrl);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                selectedPhotos.clear();
+                document.querySelectorAll('.photo-checkbox:checked').forEach(cb => cb.checked = false);
+                updateSelectionUI();
+                
+                downloadSelectedBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Download Selected</span>
+                `;
+            });
         });
     </script>
 </body>

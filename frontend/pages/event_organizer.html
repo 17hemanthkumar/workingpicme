@@ -3,835 +3,711 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Organizer - PicMe</title>
-    <link rel="stylesheet" href="/static/main.css">
+    <title>Event Organizer Dashboard - PicMe</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1f2937',
-                        secondary: '#374151',
-                        accent: '#3b82f6',
-                        surface: '#ffffff',
-                        background: '#f9fafb'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .organizer-container {
-            min-height: 100vh;
-            background: #f9fafb;
-        }
-        
-        .create-event-form {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            margin-bottom: 40px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #ffffff;
-        }
-        
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        
-        .btn-create {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            padding: 14px 32px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-        
-        .btn-create:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-        }
-        
-        .events-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-        
-        .event-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border: 1px solid #f3f4f6;
-        }
-        
-        .event-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        
-        .event-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-        }
-        
-        .event-header h3 {
-            margin: 0 0 12px 0;
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .event-info {
-            font-size: 14px;
-            opacity: 0.9;
-            line-height: 1.6;
-        }
-        
-        .event-body {
-            padding: 25px;
-        }
-        
-        .event-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #6b7280;
-        }
-        
-        .event-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-info { background: #06b6d4; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        
-        .btn:hover { 
-            opacity: 0.9; 
-            transform: translateY(-1px);
-        }
-        
-        .upload-area {
-            border: 3px dashed #d1d5db;
-            border-radius: 12px;
-            padding: 50px 20px;
-            text-align: center;
-            margin: 20px 0;
-            transition: all 0.3s ease;
-            background: #f9fafb;
-        }
-        
-        .upload-area.dragover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-            transform: scale(1.02);
-        }
-        
-        .upload-progress {
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 12px;
-            background: #e5e7eb;
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #06b6d4);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 6px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-        }
-        
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f3f4f6;
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-        
-        .close {
-            font-size: 32px;
-            cursor: pointer;
-            color: #9ca3af;
-            transition: color 0.3s ease;
-        }
-        
-        .close:hover {
-            color: #ef4444;
-        }
-        
-        .qr-container {
-            text-align: center;
-        }
-        
-        .qr-container img {
-            max-width: 250px;
-            border: 3px solid #e5e7eb;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-        
-        .alert {
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            font-weight: 500;
-        }
-        
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-        }
-        
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-        }
-        
-        .page-header {
-            background: white;
-            padding: 30px 0;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 40px;
-        }
-        
-        .page-title {
-            font-size: 32px;
-            font-weight: 800;
-            color: #1f2937;
-            margin: 0;
-        }
-        
-        .page-subtitle {
-            font-size: 18px;
-            color: #6b7280;
-            margin: 8px 0 0 0;
-        }
-        
-        .main-nav {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-        
-        .nav-brand {
-            font-size: 28px;
-            font-weight: 800;
-            color: #3b82f6;
-            text-decoration: none;
-            padding: 20px 0;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 0;
-            align-items: center;
-        }
-        
-        .nav-links a {
-            color: #4b5563;
-            text-decoration: none;
-            padding: 20px 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .nav-links a:hover, .nav-links a.active {
-            color: #3b82f6;
-            border-bottom-color: #3b82f6;
-            background: #f8faff;
-        }
-        
-        .nav-user {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #3b82f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-        
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .events-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .event-actions {
-                flex-direction: column;
-            }
-            
-            .create-event-form {
-                padding: 20px;
-            }
-        }
-    </style>
 </head>
-<body class="bg-background">
-    <!-- Navigation -->
-    <nav class="main-nav">
-        <div class="nav-container">
-            <a href="/" class="nav-brand">PicMe</a>
-            
-            <div class="nav-links">
-                <a href="/homepage">🏠 Home</a>
-                <a href="/event_discovery">🎫 Events</a>
-                <a href="/event_organizer" class="active">👨‍💼 Organizer</a>
-                <a href="/personal_photo_gallery">📸 My Photos</a>
-                <a href="/biometric_authentication_portal">🔍 Face Scan</a>
-            </div>
-            
-            <div class="nav-user">
-                <div class="user-avatar">O</div>
-                <a href="/logout" class="btn btn-primary">Logout</a>
+<body class="bg-gray-100">
+    <nav class="bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/event_organizer" class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-indigo-600" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2L20 10H28L22 16L24 24L16 20L8 24L10 16L4 10H12L16 2Z"/><circle cx="16" cy="16" r="6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    <span class="text-xl font-bold text-indigo-600">PicMe</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/event_organizer" class="text-indigo-600 hover:text-indigo-600 font-bold">My Dashboard</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if session.get('organization_name') %}
+                    <span class="text-sm text-gray-600 hidden md:block">{{ session.get('organization_name') }}</span>
+                    {% endif %}
+                    <a href="/admin/logout" class="px-4 py-2 rounded-md text-sm font-medium text-red-600 border border-red-600 hover:bg-red-50">Logout</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="organizer-container">
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="max-w-6xl mx-auto px-6">
-                <h1 class="page-title">Event Organizer Dashboard</h1>
-                <p class="page-subtitle">Create events, upload photos, and manage your event portfolio</p>
-            </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="mb-6">
+            <h1 class="text-4xl font-bold text-gray-900">Organizer Dashboard</h1>
+            {% if session.get('organization_name') %}
+            <p class="text-lg text-gray-600 mt-2">
+                <span class="font-semibold text-indigo-600">{{ session.get('organization_name') }}</span>
+            </p>
+            {% endif %}
         </div>
 
-        <div class="max-w-6xl mx-auto px-6">
-            <!-- Create Event Form -->
-            <div class="create-event-form">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800">🎉 Create New Event</h2>
-                <div id="alert-container"></div>
+        <div class="mt-8 bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-gray-800">Create a New Event</h2>
+            <form id="create-event-form" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="eventName" class="block text-sm font-medium text-gray-700">Event Name</label>
+                    <input type="text" id="eventName" name="eventName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="eventLocation" class="block text-sm font-medium text-gray-700">Location</label>
+                    <input type="text" id="eventLocation" name="eventLocation" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="eventDate" class="block text-sm font-medium text-gray-700">Date</label>
+                    <input type="date" id="eventDate" name="eventDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
                 
-                <form id="createEventForm">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="form-group">
-                            <label for="eventName">Event Name *</label>
-                            <input type="text" id="eventName" name="eventName" placeholder="Enter event name" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="eventLocation">Location *</label>
-                            <input type="text" id="eventLocation" name="eventLocation" placeholder="Enter event location" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="eventDate">Date *</label>
-                            <input type="date" id="eventDate" name="eventDate" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="eventCategory">Category</label>
-                            <select id="eventCategory" name="eventCategory">
-                                <option value="Festival">🎵 Festival</option>
-                                <option value="Corporate">💼 Corporate</option>
-                                <option value="Wedding">💒 Wedding</option>
-                                <option value="Conference">🎤 Conference</option>
-                                <option value="Party">🎉 Party</option>
-                                <option value="Sports">⚽ Sports</option>
-                                <option value="Other">🔖 Other</option>
-                            </select>
-                        </div>
+                <div>
+                    <label for="eventCategory" class="block text-sm font-medium text-gray-700">Category</label>
+                    <select id="eventCategory" name="eventCategory" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option>General</option>
+                        <option>Wedding</option>
+                        <option>Corporate</option>
+                        <option>Concert</option>
+                        <option>Private Party</option>
+                        <option>Sports</option>
+                        <option>Conference</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="eventThumbnail" class="block text-sm font-medium text-gray-700">Event Cover Thumbnail (Optional)</label>
+                    <input type="file" id="eventThumbnail" name="thumbnail" accept="image/jpeg,image/jpg,image/png,image/gif" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                    <p class="mt-1 text-sm text-gray-500">Upload a cover image for your event (Max 5MB, JPG/PNG/GIF)</p>
+                    <div id="thumbnail-preview" class="mt-2 hidden">
+                        <img id="thumbnail-preview-img" src="" alt="Thumbnail preview" class="h-32 w-auto rounded-lg border-2 border-gray-300">
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 flex justify-end items-center">
+                    <p id="create-status" class="text-sm text-green-600 mr-4"></p>
+                    <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Create Event</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-800">My Events</h2>
+            <div id="my-events-container" class="mt-6 space-y-6">
+                <p id="loading-my-events" class="text-gray-500">Loading your events...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Event Modal -->
+    <div id="edit-event-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        
+        <!-- Modal Content -->
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Edit Event Details</h2>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Edit Form -->
+                <form id="edit-event-form" class="space-y-4">
+                    <!-- Event Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Event Name *</label>
+                        <input type="text" id="edit-event-name" required maxlength="200"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <p class="text-red-600 text-sm mt-1 hidden" id="error-event-name"></p>
                     </div>
                     
-                    <div class="mt-6">
-                        <button type="submit" class="btn-create">
-                            ✨ Create Event
+                    <!-- Location -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+                        <input type="text" id="edit-location" required maxlength="200"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <p class="text-red-600 text-sm mt-1 hidden" id="error-location"></p>
+                    </div>
+                    
+                    <!-- Date -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                        <input type="date" id="edit-date" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <p class="text-red-600 text-sm mt-1 hidden" id="error-date"></p>
+                    </div>
+                    
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                        <select id="edit-category" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="">Select Category</option>
+                            <option value="Festival">Festival</option>
+                            <option value="Corporate">Corporate</option>
+                            <option value="Wedding">Wedding</option>
+                            <option value="Conference">Conference</option>
+                            <option value="Charity">Charity</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Concert">Concert</option>
+                            <option value="Private Party">Private Party</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <p class="text-red-600 text-sm mt-1 hidden" id="error-category"></p>
+                    </div>
+                    
+                    <!-- Organization Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
+                        <input type="text" id="edit-organization-name" required maxlength="200"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <p class="text-red-600 text-sm mt-1 hidden" id="error-organization-name"></p>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                        <button type="button" onclick="closeEditModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                            Save Changes
                         </button>
                     </div>
                 </form>
-            </div>
-            
-            <!-- My Events -->
-            <div class="my-events-section">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">📋 My Events</h2>
-                    <button onclick="loadMyEvents()" class="btn btn-info">
-                        🔄 Refresh
-                    </button>
+                
+                <!-- Loading Indicator -->
+                <div id="edit-loading" class="hidden absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                    <div class="text-center">
+                        <svg class="animate-spin h-10 w-10 text-indigo-600 mx-auto" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-2 text-gray-600">Saving changes...</p>
+                    </div>
                 </div>
-                <div id="eventsGrid" class="events-grid">
-                    <!-- Events will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- QR Code Modal -->
-    <div id="qrModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="qrEventName">📱 Event QR Code</h3>
-                <span class="close" onclick="closeModal('qrModal')">&times;</span>
-            </div>
-            <div class="qr-container">
-                <img id="qrCodeImage" src="" alt="QR Code">
-                <p class="mt-4 text-gray-600">Share this QR code with event attendees</p>
-                <button onclick="downloadQR()" class="btn btn-primary mt-4">
-                    📥 Download QR Code
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Upload Photos Modal -->
-    <div id="uploadModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="uploadEventName">📸 Upload Photos</h3>
-                <span class="close" onclick="closeModal('uploadModal')">&times;</span>
-            </div>
-            
-            <div class="upload-area" id="uploadArea">
-                <div class="text-4xl mb-4">📷</div>
-                <p class="text-lg mb-4">Drop photos here or click to select</p>
-                <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
-                <button class="btn btn-primary" onclick="document.getElementById('photoInput').click()">
-                    📁 Select Photos
-                </button>
-            </div>
-            
-            <div class="upload-progress" id="uploadProgress">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <p id="uploadStatus" class="mt-2 text-center">Uploading...</p>
-            </div>
-            
-            <div id="selectedFiles"></div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>🗑️ Delete Event</h3>
-                <span class="close" onclick="closeModal('deleteModal')">&times;</span>
-            </div>
-            <p class="mb-6">Are you sure you want to delete this event? This action cannot be undone.</p>
-            <div class="flex gap-3 justify-end">
-                <button onclick="closeModal('deleteModal')" class="btn btn-info">Cancel</button>
-                <button onclick="confirmDelete()" class="btn btn-danger">Delete Event</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentEventId = null;
-        let eventToDelete = null;
-        
-        // Load events on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadMyEvents();
-        });
-        
-        // Create Event Form Submit
-        document.getElementById('createEventForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        document.addEventListener('DOMContentLoaded', () => {
+            const createEventForm = document.getElementById('create-event-form');
+            const createStatus = document.getElementById('create-status');
+            const myEventsContainer = document.getElementById('my-events-container');
+            const loadingMyEvents = document.getElementById('loading-my-events');
+
+            // Thumbnail preview
+            const thumbnailInput = document.getElementById('eventThumbnail');
+            const thumbnailPreview = document.getElementById('thumbnail-preview');
+            const thumbnailPreviewImg = document.getElementById('thumbnail-preview-img');
             
-            const formData = new FormData(this);
-            const eventData = {
-                eventName: formData.get('eventName'),
-                eventLocation: formData.get('eventLocation'),
-                eventDate: formData.get('eventDate'),
-                eventCategory: formData.get('eventCategory')
+            thumbnailInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file size
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File too large. Maximum size is 5MB');
+                        thumbnailInput.value = '';
+                        thumbnailPreview.classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        thumbnailPreviewImg.src = e.target.result;
+                        thumbnailPreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    thumbnailPreview.classList.add('hidden');
+                }
+            });
+
+            createEventForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                createStatus.textContent = 'Creating...';
+                const formData = new FormData(createEventForm);
+
+                try {
+                    const response = await fetch('/api/create_event', {
+                        method: 'POST',
+                        body: formData, // Send as multipart form data
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        createStatus.textContent = 'Event created successfully!';
+                        createEventForm.reset();
+                        thumbnailPreview.classList.add('hidden');
+                        loadMyEvents();
+                    } else { throw new Error(result.error || 'Failed to create event'); }
+                } catch (error) {
+                    createStatus.textContent = `Error: ${error.message}`;
+                }
+                setTimeout(() => createStatus.textContent = '', 3000);
+            });
+            
+            async function loadMyEvents() {
+                try {
+                    // Add cache-busting timestamp to force fresh data
+                    const response = await fetch(`/api/events?t=${Date.now()}`);
+                    const myEvents = await response.json();
+                    
+                    loadingMyEvents.style.display = 'none';
+                    if (myEvents.length === 0) {
+                        myEventsContainer.innerHTML = '<p class="text-gray-500">You have not created any events yet.</p>';
+                        return;
+                    }
+
+                    myEventsContainer.innerHTML = myEvents.map(event => `
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden" id="event-card-${event.id}">
+                            <!-- Event Cover Thumbnail -->
+                            <div class="relative h-48 bg-gray-200">
+                                <img src="${event.cover_thumbnail || '/static/images/default_event_thumbnail.jpg'}" 
+                                     alt="${event.name}" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.src='/static/images/default_event_thumbnail.jpg'">
+                                <div class="absolute top-2 left-2">
+                                    <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${event.category || 'General'}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Event Details -->
+                            <div class="p-6">
+                                <div class="flex flex-col md:flex-row justify-between items-start mb-4">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-gray-900">${event.name}</h3>
+                                        <p class="text-sm text-gray-600 mt-1">${event.location} - ${new Date(event.date).toLocaleDateString()}</p>
+                                        <p class="text-sm text-gray-500">ID: ${event.id}</p>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+                                        <button onclick="openEditModal('${event.id}')" class="px-4 py-2 text-sm font-medium rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit Event
+                                        </button>
+                                        <button onclick="editThumbnail('${event.id}')" class="px-4 py-2 text-sm font-medium rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200">Edit Thumbnail</button>
+                                        <a href="/api/qr_code/${event.id}" download="${event.name}_QR.png" class="px-4 py-2 text-sm font-medium rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300">Download QR</a>
+                                        <button onclick="deleteEvent('${event.id}')" class="px-4 py-2 text-sm font-medium rounded-md bg-red-100 text-red-700 hover:bg-red-200">Delete</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- View Photos Section -->
+                                <div class="border-t pt-4 mb-4">
+                                    <button onclick="togglePhotos('${event.id}')" class="flex items-center justify-between w-full text-left px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md">
+                                        <span>View Photos (${event.photos_count || 0})</span>
+                                        <svg id="chevron-${event.id}" class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <div id="photos-${event.id}" class="hidden mt-4">
+                                        <div class="flex items-center justify-center py-8">
+                                            <div class="text-gray-500">Loading photos...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Photo Upload Section -->
+                                <div class="border-t pt-4">
+                                    <form class="upload-form" data-event-id="${event.id}">
+                                        <label class="block text-sm font-medium text-gray-700">Upload Photos</label>
+                                        <div class="flex items-center space-x-4 mt-2">
+                                            <input type="file" name="photos" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                            <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Upload</button>
+                                        </div>
+                                        <p class="upload-status text-sm mt-2"></p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    document.querySelectorAll('.upload-form').forEach(form => {
+                        form.addEventListener('submit', handlePhotoUpload);
+                    });
+                } catch (error) {
+                    loadingMyEvents.textContent = 'Could not load your events.';
+                    console.error('Failed to load events:', error);
+                }
+            }
+
+            async function handlePhotoUpload(e) {
+                e.preventDefault();
+                const form = e.target;
+                const eventId = form.dataset.eventId;
+                const statusEl = form.querySelector('.upload-status');
+                const formData = new FormData(form);
+
+                statusEl.textContent = 'Uploading...';
+                try {
+                    const response = await fetch(`/api/upload_photos/${eventId}`, { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) {
+                        statusEl.textContent = result.message;
+                        form.reset();
+                    } else { throw new Error(result.error || 'Upload failed'); }
+                } catch (error) { statusEl.textContent = `Error: ${error.message}`; }
+                 setTimeout(() => statusEl.textContent = '', 4000);
+            }
+
+            window.deleteEvent = async (eventId) => {
+                if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) return;
+                try {
+                    const response = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+                    const result = await response.json();
+                    if (result.success) {
+                        document.getElementById(`event-card-${eventId}`).remove();
+                    } else { throw new Error(result.error || 'Failed to delete event'); }
+                } catch (error) { alert(`Error: ${error.message}`); }
+            };
+
+            window.editThumbnail = async (eventId) => {
+                // Create file input dynamically
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/jpeg,image/jpg,image/png,image/gif';
+                
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    // Validate file size (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File too large. Maximum size is 5MB');
+                        return;
+                    }
+                    
+                    // Upload thumbnail
+                    const formData = new FormData();
+                    formData.append('thumbnail', file);
+                    
+                    try {
+                        const response = await fetch(`/api/admin/events/${eventId}/thumbnail`, {
+                            method: 'PUT',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // Update thumbnail in UI
+                            const eventCard = document.getElementById(`event-card-${eventId}`);
+                            const img = eventCard.querySelector('img');
+                            img.src = result.thumbnail_url + '?t=' + new Date().getTime(); // Cache bust
+                            alert('Thumbnail updated successfully!');
+                        } else {
+                            throw new Error(result.error || 'Failed to update thumbnail');
+                        }
+                    } catch (error) {
+                        alert(`Error: ${error.message}`);
+                    }
+                };
+                
+                input.click();
+            };
+
+            window.togglePhotos = async (eventId) => {
+                const photosContainer = document.getElementById(`photos-${eventId}`);
+                const chevron = document.getElementById(`chevron-${eventId}`);
+                
+                if (photosContainer.classList.contains('hidden')) {
+                    // Show and load photos
+                    photosContainer.classList.remove('hidden');
+                    chevron.classList.add('rotate-180');
+                    
+                    // Load photos if not already loaded
+                    if (!photosContainer.dataset.loaded) {
+                        await loadEventPhotos(eventId);
+                        photosContainer.dataset.loaded = 'true';
+                    }
+                } else {
+                    // Hide photos
+                    photosContainer.classList.add('hidden');
+                    chevron.classList.remove('rotate-180');
+                }
+            };
+
+            async function loadEventPhotos(eventId) {
+                const photosContainer = document.getElementById(`photos-${eventId}`);
+                
+                try {
+                    const response = await fetch(`/api/admin/events/${eventId}/photos`);
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Failed to load photos');
+                    }
+                    
+                    if (result.photos.length === 0) {
+                        photosContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No photos uploaded yet</p>';
+                        return;
+                    }
+                    
+                    // Render photos in grid
+                    photosContainer.innerHTML = `
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            ${result.photos.map(photo => `
+                                <div class="relative group" data-photo="${photo.filename}">
+                                    <img src="${photo.url}" alt="${photo.filename}" class="w-full h-32 object-cover rounded-lg">
+                                    <button onclick="deletePhoto('${eventId}', '${photo.filename}')" 
+                                            class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } catch (error) {
+                    photosContainer.innerHTML = `<p class="text-red-500 text-center py-4">Error: ${error.message}</p>`;
+                }
+            }
+
+            window.deletePhoto = async (eventId, filename) => {
+                if (!confirm(`Are you sure you want to delete this photo?\n\nFilename: ${filename}\n\nThis action cannot be undone.`)) {
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/admin/events/${eventId}/photos/${encodeURIComponent(filename)}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Remove photo from UI
+                        const photosContainer = document.getElementById(`photos-${eventId}`);
+                        const photoElement = photosContainer.querySelector(`[data-photo="${filename}"]`);
+                        if (photoElement) {
+                            photoElement.remove();
+                        }
+                        
+                        // Check if no photos left
+                        const remainingPhotos = photosContainer.querySelectorAll('[data-photo]');
+                        if (remainingPhotos.length === 0) {
+                            photosContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No photos uploaded yet</p>';
+                        }
+                        
+                        // Update photo count in button
+                        const eventCard = document.getElementById(`event-card-${eventId}`);
+                        const viewButton = eventCard.querySelector(`button[onclick="togglePhotos('${eventId}')"]`);
+                        if (viewButton) {
+                            const currentCount = parseInt(viewButton.textContent.match(/\d+/)[0]);
+                            const newCount = Math.max(0, currentCount - 1);
+                            viewButton.querySelector('span').textContent = `View Photos (${newCount})`;
+                        }
+                        
+                        alert('Photo deleted successfully!');
+                    } else {
+                        throw new Error(result.error || 'Failed to delete photo');
+                    }
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
             };
             
-            fetch('/api/create_event', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(eventData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert('🎉 Event created successfully!', 'success');
-                    this.reset();
-                    loadMyEvents(); // Refresh events list
-                } else {
-                    showAlert('❌ ' + (data.error || 'Failed to create event'), 'error');
-                }
-            })
-            .catch(error => {
-                showAlert('❌ Network error occurred', 'error');
-                console.error('Error:', error);
-            });
-        });
-        
-        // Load My Events
-        function loadMyEvents() {
-            fetch('/api/my_events')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    displayEvents(data.events);
-                } else {
-                    showAlert('❌ Failed to load events', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading events:', error);
-                showAlert('❌ Failed to load events', 'error');
-            });
-        }
-        
-        // Display Events
-        function displayEvents(events) {
-            const eventsGrid = document.getElementById('eventsGrid');
-            
-            if (events.length === 0) {
-                eventsGrid.innerHTML = `
-                    <div class="col-span-full text-center py-12">
-                        <div class="text-6xl mb-4">📅</div>
-                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No events created yet</h3>
-                        <p class="text-gray-500">Create your first event using the form above!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            eventsGrid.innerHTML = events.map(event => `
-                <div class="event-card">
-                    <div class="event-header">
-                        <h3>${event.name}</h3>
-                        <div class="event-info">
-                            <div>📍 ${event.location}</div>
-                            <div>📅 ${new Date(event.date).toLocaleDateString()}</div>
-                            <div>🏷️ ${event.category}</div>
-                        </div>
-                    </div>
-                    <div class="event-body">
-                        <div class="event-stats">
-                            <span>📸 ${event.photos_count} photos</span>
-                            <span class="text-xs">🆔 ${event.id}</span>
-                        </div>
-                        <div class="event-actions">
-                            <button class="btn btn-info" onclick="showQRCode('${event.id}', '${event.name}')">
-                                📱 QR Code
-                            </button>
-                            <button class="btn btn-success" onclick="showUploadModal('${event.id}', '${event.name}')">
-                                📤 Upload Photos
-                            </button>
-                            <button class="btn btn-danger" onclick="showDeleteConfirm('${event.id}', '${event.name}')">
-                                🗑️ Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        // Show QR Code Modal
-        function showQRCode(eventId, eventName) {
-            document.getElementById('qrEventName').innerHTML = `📱 ${eventName} - QR Code`;
-            document.getElementById('qrCodeImage').src = `/api/qr_code/${eventId}`;
-            document.getElementById('qrModal').style.display = 'block';
-            currentEventId = eventId;
-        }
-        
-        // Download QR Code
-        function downloadQR() {
-            if (currentEventId) {
-                window.open(`/api/qr_code/${currentEventId}`, '_blank');
-            }
-        }
-        
-        // Show Upload Modal
-        function showUploadModal(eventId, eventName) {
-            currentEventId = eventId;
-            document.getElementById('uploadEventName').innerHTML = `📸 Upload Photos - ${eventName}`;
-            document.getElementById('uploadModal').style.display = 'block';
-            
-            // Reset upload area
-            document.getElementById('selectedFiles').innerHTML = '';
-            document.getElementById('uploadProgress').style.display = 'none';
-        }
-        
-        // Show Delete Confirmation
-        function showDeleteConfirm(eventId, eventName) {
-            eventToDelete = {id: eventId, name: eventName};
-            document.getElementById('deleteModal').style.display = 'block';
-        }
-        
-        // Confirm Delete
-        function confirmDelete() {
-            if (!eventToDelete) return;
-            
-            fetch(`/api/delete_event/${eventToDelete.id}`, {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert('🗑️ Event deleted successfully!', 'success');
-                    closeModal('deleteModal');
-                    loadMyEvents(); // Refresh events list
-                } else {
-                    showAlert('❌ ' + (data.error || 'Failed to delete event'), 'error');
-                }
-            })
-            .catch(error => {
-                showAlert('❌ Network error occurred', 'error');
-                console.error('Error:', error);
-            });
-        }
-        
-        // Close Modal
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-        
-        // Handle Photo Selection
-        document.getElementById('photoInput').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            displaySelectedFiles(files);
-        });
-        
-        // Drag and Drop functionality
-        const uploadArea = document.getElementById('uploadArea');
-        
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-            
-            const files = Array.from(e.dataTransfer.files).filter(file => 
-                file.type.startsWith('image/')
-            );
-            
-            if (files.length > 0) {
-                document.getElementById('photoInput').files = e.dataTransfer.files;
-                displaySelectedFiles(files);
-            }
-        });
-        
-        // Display Selected Files
-        function displaySelectedFiles(files) {
-            const selectedFilesDiv = document.getElementById('selectedFiles');
-            
-            if (files.length === 0) {
-                selectedFilesDiv.innerHTML = '';
-                return;
-            }
-            
-            selectedFilesDiv.innerHTML = `
-                <div class="bg-blue-50 p-4 rounded-lg mt-4">
-                    <h4 class="font-semibold mb-2">📁 Selected Files (${files.length}):</h4>
-                    <ul class="text-sm text-gray-600 mb-4 max-h-32 overflow-y-auto">
-                        ${files.map(file => `<li>• ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</li>`).join('')}
-                    </ul>
-                    <button class="btn btn-success" onclick="uploadPhotos()">
-                        📤 Upload ${files.length} Photos
-                    </button>
-                </div>
-            `;
-        }
-        
-        // Upload Photos
-        function uploadPhotos() {
-            const files = document.getElementById('photoInput').files;
-            
-            if (!files || files.length === 0) {
-                showAlert('❌ Please select photos first', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            Array.from(files).forEach(file => {
-                formData.append('photos', file);
-            });
-            
-            // Show progress
-            document.getElementById('uploadProgress').style.display = 'block';
-            document.getElementById('uploadStatus').textContent = '📤 Uploading photos...';
-            
-            // Simulate progress
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 10;
-                document.getElementById('progressFill').style.width = progress + '%';
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                }
-            }, 200);
-            
-            fetch(`/api/upload_photos/${currentEventId}`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                clearInterval(progressInterval);
-                document.getElementById('progressFill').style.width = '100%';
+            // Edit Event Modal Functions
+            let currentEditEventId = null;
+
+            window.openEditModal = async (eventId) => {
+                currentEditEventId = eventId;
                 
-                if (data.success) {
-                    document.getElementById('uploadStatus').textContent = '✅ ' + data.message;
-                    setTimeout(() => {
-                        closeModal('uploadModal');
-                        loadMyEvents(); // Refresh events to update photo count
-                    }, 2000);
-                } else {
-                    document.getElementById('uploadStatus').textContent = '❌ Upload failed: ' + data.error;
+                try {
+                    // Add cache-busting timestamp to force fresh data
+                    const response = await fetch(`/api/events/${eventId}?t=${Date.now()}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const event = data.event;
+                        
+                        // Populate form fields
+                        document.getElementById('edit-event-name').value = event.name || '';
+                        document.getElementById('edit-location').value = event.location || '';
+                        document.getElementById('edit-date').value = formatDateForInput(event.date);
+                        document.getElementById('edit-category').value = event.category || '';
+                        document.getElementById('edit-organization-name').value = event.organization_name || '';
+                        
+                        // Show modal
+                        document.getElementById('edit-event-modal').classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        alert('Failed to load event details');
+                    }
+                } catch (error) {
+                    console.error('Error loading event:', error);
+                    alert('Failed to load event details');
                 }
-            })
-            .catch(error => {
-                clearInterval(progressInterval);
-                document.getElementById('uploadStatus').textContent = '❌ Upload failed: Network error';
-                console.error('Error:', error);
-            });
-        }
-        
-        // Show Alert
-        function showAlert(message, type) {
-            const alertContainer = document.getElementById('alert-container');
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
-            
-            alertContainer.innerHTML = `
-                <div class="alert ${alertClass}">
-                    ${message}
-                </div>
-            `;
-            
-            setTimeout(() => {
-                alertContainer.innerHTML = '';
-            }, 5000);
-        }
-        
-        // Close modals when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
+            };
+
+            window.closeEditModal = () => {
+                document.getElementById('edit-event-modal').classList.add('hidden');
+                document.body.style.overflow = '';
+                currentEditEventId = null;
+                
+                // Clear form and errors
+                document.getElementById('edit-event-form').reset();
+                clearValidationErrors();
+            };
+
+            function formatDateForInput(dateString) {
+                // Handle various date formats
+                try {
+                    // Try parsing as ISO date first
+                    const date = new Date(dateString);
+                    if (!isNaN(date.getTime())) {
+                        return date.toISOString().split('T')[0];
+                    }
+                    
+                    // If that fails, try to extract date parts
+                    const parts = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
+                    if (parts) {
+                        return `${parts[1]}-${parts[2]}-${parts[3]}`;
+                    }
+                    
+                    return '';
+                } catch (e) {
+                    return '';
+                }
             }
+
+            function clearValidationErrors() {
+                const errorElements = document.querySelectorAll('[id^="error-"]');
+                errorElements.forEach(el => {
+                    el.textContent = '';
+                    el.classList.add('hidden');
+                });
+                
+                const inputElements = document.querySelectorAll('#edit-event-form input, #edit-event-form select');
+                inputElements.forEach(el => {
+                    el.classList.remove('border-red-500');
+                });
+            }
+
+            function showValidationError(fieldId, message) {
+                const errorEl = document.getElementById(`error-${fieldId}`);
+                const inputEl = document.getElementById(`edit-${fieldId}`);
+                
+                if (errorEl && inputEl) {
+                    errorEl.textContent = message;
+                    errorEl.classList.remove('hidden');
+                    inputEl.classList.add('border-red-500');
+                }
+            }
+
+            function validateEditForm() {
+                clearValidationErrors();
+                let isValid = true;
+                
+                const eventName = document.getElementById('edit-event-name').value.trim();
+                const location = document.getElementById('edit-location').value.trim();
+                const date = document.getElementById('edit-date').value;
+                const category = document.getElementById('edit-category').value;
+                const orgName = document.getElementById('edit-organization-name').value.trim();
+                
+                if (!eventName) {
+                    showValidationError('event-name', 'Event name is required');
+                    isValid = false;
+                } else if (eventName.length > 200) {
+                    showValidationError('event-name', 'Event name must be 200 characters or less');
+                    isValid = false;
+                }
+                
+                if (!location) {
+                    showValidationError('location', 'Location is required');
+                    isValid = false;
+                } else if (location.length > 200) {
+                    showValidationError('location', 'Location must be 200 characters or less');
+                    isValid = false;
+                }
+                
+                if (!date) {
+                    showValidationError('date', 'Date is required');
+                    isValid = false;
+                }
+                
+                if (!category) {
+                    showValidationError('category', 'Category is required');
+                    isValid = false;
+                }
+                
+                if (!orgName) {
+                    showValidationError('organization-name', 'Organization name is required');
+                    isValid = false;
+                } else if (orgName.length > 200) {
+                    showValidationError('organization-name', 'Organization name must be 200 characters or less');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+
+            // Handle form submission
+            document.getElementById('edit-event-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!validateEditForm()) {
+                    return;
+                }
+                
+                // Show loading indicator
+                document.getElementById('edit-loading').classList.remove('hidden');
+                
+                try {
+                    const formData = {
+                        name: document.getElementById('edit-event-name').value.trim(),
+                        location: document.getElementById('edit-location').value.trim(),
+                        date: document.getElementById('edit-date').value,
+                        category: document.getElementById('edit-category').value,
+                        organization_name: document.getElementById('edit-organization-name').value.trim()
+                    };
+                    
+                    const response = await fetch(`/api/update_event/${currentEditEventId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Show success message
+                        alert('Event updated successfully!');
+                        
+                        // Close modal
+                        closeEditModal();
+                        
+                        // Reload events to show updated data
+                        await loadMyEvents();
+                    } else {
+                        alert(data.error || 'Failed to update event');
+                    }
+                } catch (error) {
+                    console.error('Error updating event:', error);
+                    alert('Failed to update event. Please try again.');
+                } finally {
+                    document.getElementById('edit-loading').classList.add('hidden');
+                }
+            });
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !document.getElementById('edit-event-modal').classList.contains('hidden')) {
+                    closeEditModal();
+                }
+            });
+
+            // Close modal on backdrop click
+            document.getElementById('edit-event-modal')?.addEventListener('click', (e) => {
+                if (e.target.id === 'edit-event-modal') {
+                    closeEditModal();
+                }
+            });
+            
+            loadMyEvents();
         });
     </script>
 </body>

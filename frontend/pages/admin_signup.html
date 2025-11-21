@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration - PicMe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center min-h-screen py-12">
+    <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        <!-- Admin Badge -->
+        <div class="flex justify-center mb-4">
+            <span class="bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                🏢 Organization Registration
+            </span>
+        </div>
+        
+        <h2 class="text-3xl font-bold text-center text-gray-900 mb-2">Register Your Organization</h2>
+        <p class="text-center text-gray-600 mb-6">Start managing events with PicMe</p>
+        
+        <form id="admin-signup-form">
+            <div class="mb-4">
+                <label for="organizationName" class="block text-sm font-medium text-gray-700">Organization Name</label>
+                <input type="text" id="organizationName" name="organizationName" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                       placeholder="Tech Events Inc.">
+            </div>
+            
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="email" name="email" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                       placeholder="admin@organization.com">
+            </div>
+            
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" required minlength="6"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                       placeholder="••••••••">
+                <p class="mt-1 text-xs text-gray-500">Minimum 6 characters</p>
+            </div>
+            
+            <div id="error-message" class="text-red-500 text-sm mb-4 text-center"></div>
+            <div id="success-message" class="text-green-500 text-sm mb-4 text-center"></div>
+            
+            <div>
+                <button type="submit"
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    Register Organization
+                </button>
+            </div>
+        </form>
+        
+        <div class="mt-6 space-y-3">
+            <p class="text-center text-sm text-gray-600">
+                Already registered? <a href="/admin/login" class="font-medium text-indigo-600 hover:text-indigo-500">Sign in</a>
+            </p>
+            <div class="border-t border-gray-200 pt-3">
+                <p class="text-center text-sm text-gray-500">
+                    Regular user? <a href="/signup" class="font-medium text-gray-700 hover:text-gray-900">User Signup</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('admin-signup-form');
+        const errorMessageDiv = document.getElementById('error-message');
+        const successMessageDiv = document.getElementById('success-message');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            errorMessageDiv.textContent = '';
+            successMessageDiv.textContent = '';
+
+            const organizationName = document.getElementById('organizationName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Client-side validation
+            if (password.length < 6) {
+                errorMessageDiv.textContent = 'Password must be at least 6 characters long.';
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ organizationName, email, password }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    successMessageDiv.textContent = 'Registration successful! Redirecting to login...';
+                    // Redirect to admin login after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/admin/login';
+                    }, 2000);
+                } else {
+                    errorMessageDiv.textContent = data.error || 'An unknown error occurred.';
+                }
+            } catch (error) {
+                errorMessageDiv.textContent = 'An error occurred during registration. Please try again later.';
+            }
+        });
+    </script>
+</body>
+</html>

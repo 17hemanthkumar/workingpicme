@@ -5,85 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - PicMe</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-gradient {
+            background: linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #C026D3 100%);
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <!-- Admin Badge -->
-        <div class="flex justify-center mb-4">
-            <span class="bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                🔐 Admin Portal
-            </span>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <svg class="w-8 h-8 text-purple-600" viewBox="0 0 32 32" fill="currentColor">
+                            <path d="M16 2L20 10H28L22 16L24 24L16 20L8 24L10 16L4 10H12L16 2Z"/>
+                            <circle cx="16" cy="16" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span class="text-xl font-bold text-purple-600">PicMe Admin</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-purple-600 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
         </div>
-        
-        <h2 class="text-3xl font-bold text-center text-gray-900 mb-2">Event Organizer Login</h2>
-        <p class="text-center text-gray-600 mb-6">Sign in to manage your events</p>
-        
-        <form id="admin-login-form">
-            <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                <input type="email" id="email" name="email" required
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                       placeholder="admin@organization.com">
+    </nav>
+
+    <!-- Admin Login Section -->
+    <div class="min-h-screen flex items-center justify-center pt-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Header -->
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 admin-gradient rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-shield-alt text-white text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900">Administrator Access</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Sign in to access the admin dashboard
+                </p>
             </div>
-            <div class="mb-6">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" id="password" name="password" required
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                       placeholder="••••••••">
+
+            <!-- Login Form -->
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <form id="adminLoginForm" class="space-y-6">
+                    <!-- Username Field -->
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2 text-purple-600"></i>Username
+                        </label>
+                        <input 
+                            id="username" 
+                            name="username" 
+                            type="text" 
+                            required 
+                            class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                            placeholder="Enter admin username"
+                        >
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-lock mr-2 text-purple-600"></i>Password
+                        </label>
+                        <input 
+                            id="password" 
+                            name="password" 
+                            type="password" 
+                            required 
+                            class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                            placeholder="Enter admin password"
+                        >
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span id="errorText"></span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white admin-gradient hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In to Dashboard
+                    </button>
+                </form>
+
+                <!-- Security Notice -->
+                <div class="mt-6 p-4 bg-purple-50 rounded-lg">
+                    <p class="text-xs text-purple-800 text-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        This area is restricted to authorized administrators only
+                    </p>
+                </div>
             </div>
-            
-            <div id="error-message" class="text-red-500 text-sm mb-4 text-center"></div>
-            
-            <div>
-                <button type="submit"
-                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                    Sign In as Admin
-                </button>
-            </div>
-        </form>
-        
-        <div class="mt-6 space-y-3">
-            <p class="text-center text-sm text-gray-600">
-                New organization? <a href="/admin/signup" class="font-medium text-indigo-600 hover:text-indigo-500">Register here</a>
-            </p>
-            <div class="border-t border-gray-200 pt-3">
-                <p class="text-center text-sm text-gray-500">
-                    Regular user? <a href="/login" class="font-medium text-gray-700 hover:text-gray-900">User Login</a>
+
+            <!-- User Login Link -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Not an admin? 
+                    <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        User Login
+                    </a>
                 </p>
             </div>
         </div>
     </div>
 
     <script>
-        const form = document.getElementById('admin-login-form');
-        const errorMessageDiv = document.getElementById('error-message');
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            errorMessageDiv.textContent = '';
-
-            const email = document.getElementById('email').value;
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            
+            // Hide previous errors
+            errorMessage.classList.add('hidden');
+            
             try {
-                const response = await fetch('/admin/login', {
+                const response = await fetch('/admin_login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email, password }),
+                    body: JSON.stringify({ username, password })
                 });
-
+                
                 const data = await response.json();
-
+                
                 if (data.success) {
-                    // Redirect to event organizer dashboard
-                    window.location.href = data.redirect || '/event_organizer';
+                    // Redirect to admin dashboard
+                    window.location.href = '/admin_dashboard';
                 } else {
-                    errorMessageDiv.textContent = data.error || 'An unknown error occurred.';
+                    // Show error message
+                    errorText.textContent = data.error || 'Invalid credentials';
+                    errorMessage.classList.remove('hidden');
                 }
             } catch (error) {
-                errorMessageDiv.textContent = 'An error occurred during login. Please try again later.';
+                console.error('Login error:', error);
+                errorText.textContent = 'An error occurred. Please try again.';
+                errorMessage.classList.remove('hidden');
             }
         });
     </script>

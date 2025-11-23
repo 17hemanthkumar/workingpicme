@@ -19,7 +19,7 @@
                     <a href="/homepage" class="text-gray-600 hover:text-indigo-600">Home</a>
                     <a href="/event_discovery" class="text-indigo-600 hover:text-indigo-600 font-bold">Events</a>
                     <a href="/personal_photo_gallery" class="text-gray-600 hover:text-indigo-600">My Photos</a>
-                    <a href="/my_downloads" class="text-gray-600 hover:text-indigo-600">My Downloads</a>
+                    <a href="/event_organizer" class="text-gray-600 hover:text-indigo-600">My Dashboard</a>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/logout" class="px-4 py-2 rounded-md text-sm font-medium text-red-600 border border-red-600 hover:bg-red-50">Logout</a>
@@ -50,24 +50,7 @@
         <div id="scan-status" class="text-center text-gray-600 mt-4 font-medium"></div>
 
         <div class="mt-16">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800">All Events</h2>
-                <div class="relative w-full max-w-md">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <input type="text" id="event-search" placeholder="Search by event or organization name..." 
-                           class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    <button id="clear-search" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 hidden">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div id="search-results-count" class="text-sm text-gray-600 mb-4 hidden"></div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">All Events</h2>
             <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <p id="loading-events" class="text-gray-500 col-span-full">Loading events...</p>
             </div>
@@ -131,98 +114,34 @@
                 }
             });
 
-            let allEvents = [];
-
-            function displayEvents(events) {
-                const grid = document.getElementById('events-grid');
-                const resultsCount = document.getElementById('search-results-count');
-                
-                if (events.length === 0) {
-                    grid.innerHTML = '<p class="text-gray-500 col-span-full">No events found matching your search.</p>';
-                    resultsCount.classList.add('hidden');
-                    return;
-                }
-                
-                grid.innerHTML = events.map(event => `
-                    <a href="/event_detail?event_id=${event.id}" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow group">
-                        <div class="relative">
-                            <img src="${event.cover_thumbnail || '/static/images/default_event_thumbnail.jpg'}" alt="${event.name}" class="w-full h-48 object-cover">
-                            <span class="absolute top-2 right-2 bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${event.category || 'General'}</span>
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-bold text-gray-900 group-hover:text-indigo-600">${event.name}</h3>
-                            <p class="text-xs text-gray-500 mt-1">by ${event.organization_name || 'Unknown Organizer'}</p>
-                            <p class="text-sm text-gray-600 mt-1">${event.location}</p>
-                            <p class="text-sm text-gray-500 mt-1">${new Date(event.date).toLocaleDateString()}</p>
-                        </div>
-                    </a>
-                `).join('');
-            }
-
-            function filterEvents(searchTerm) {
-                const resultsCount = document.getElementById('search-results-count');
-                
-                if (!searchTerm.trim()) {
-                    displayEvents(allEvents);
-                    resultsCount.classList.add('hidden');
-                    return;
-                }
-                
-                const filtered = allEvents.filter(event => {
-                    const searchLower = searchTerm.toLowerCase();
-                    const orgName = (event.organization_name || 'Unknown Organizer').toLowerCase();
-                    const eventName = (event.name || '').toLowerCase();
-                    
-                    // Search in both organization name and event name
-                    return orgName.includes(searchLower) || eventName.includes(searchLower);
-                });
-                
-                displayEvents(filtered);
-                resultsCount.textContent = `Found ${filtered.length} event${filtered.length !== 1 ? 's' : ''}`;
-                resultsCount.classList.remove('hidden');
-            }
-
             async function loadEvents() {
                 try {
-                    // Add cache-busting timestamp to force fresh data
-                    const response = await fetch(`/api/events?t=${Date.now()}`);
-                    allEvents = await response.json();
+                    const response = await fetch('/api/events');
+                    const events = await response.json();
+                    const grid = document.getElementById('events-grid');
                     document.getElementById('loading-events').style.display = 'none';
-                    
-                    if (allEvents.length === 0) {
-                        document.getElementById('events-grid').innerHTML = '<p class="text-gray-500 col-span-full">No events have been created yet.</p>';
+                    if (events.length === 0) {
+                        grid.innerHTML = '<p class="text-gray-500 col-span-full">No events have been created yet.</p>';
                         return;
                     }
-                    
-                    displayEvents(allEvents);
+                    grid.innerHTML = events.map(event => `
+                        <a href="/event_detail?event_id=${event.id}" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow group">
+                            <div class="relative">
+                                <img src="${event.image || '/static/images/default_event.jpg'}" alt="${event.name}" class="w-full h-48 object-cover">
+                                <span class="absolute top-2 right-2 bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${event.category || 'General'}</span>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold text-gray-900 group-hover:text-indigo-600">${event.name}</h3>
+                                <p class="text-sm text-gray-600 mt-1">${event.location}</p>
+                                <p class="text-sm text-gray-500 mt-1">${new Date(event.date).toLocaleDateString()}</p>
+                            </div>
+                        </a>
+                    `).join('');
                 } catch (error) {
                     console.error('Failed to load events:', error);
                     document.getElementById('loading-events').textContent = 'Could not load events.';
                 }
             }
-
-            // Search functionality
-            const searchInput = document.getElementById('event-search');
-            const clearSearchBtn = document.getElementById('clear-search');
-            
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value;
-                filterEvents(searchTerm);
-                
-                // Show/hide clear button
-                if (searchTerm) {
-                    clearSearchBtn.classList.remove('hidden');
-                } else {
-                    clearSearchBtn.classList.add('hidden');
-                }
-            });
-            
-            clearSearchBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                clearSearchBtn.classList.add('hidden');
-                filterEvents('');
-            });
-
             loadEvents();
         });
     </script>
